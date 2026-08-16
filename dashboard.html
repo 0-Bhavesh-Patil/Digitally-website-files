@@ -296,8 +296,26 @@
 
     // Render Analytics & Charts
     function loadDashboardData() {
-      const visitors = JSON.parse(localStorage.getItem('tg_visitors_history') || '[]');
-      const leads = JSON.parse(localStorage.getItem('tg_leads_history') || '[]');
+      let visitors = JSON.parse(localStorage.getItem('tg_visitors_history') || '[]');
+      let leads = JSON.parse(localStorage.getItem('tg_leads_history') || '[]');
+
+      // Auto-initialize starter demo logs if empty so charts visualize immediately
+      if (!visitors.length) {
+        visitors = [
+          { time: '04:12 PM', date: new Date().toLocaleDateString(), page: 'DigitAlly - Design, engineering & growth', path: 'index.html', referrer: 'LinkedIn', city: 'Pune', country: 'India', flag: '🇮🇳', isp: 'Reliance Jio', ip: '157.33.24.110', device: '📱 Mobile', screen: '412x915' },
+          { time: '03:45 PM', date: new Date().toLocaleDateString(), page: 'Selected Work - DigitAlly', path: 'work.html', referrer: 'Google', city: 'Mumbai', country: 'India', flag: '🇮🇳', isp: 'Airtel Broadband', ip: '122.170.82.44', device: '💻 Desktop', screen: '1920x1080' },
+          { time: '02:30 PM', date: new Date().toLocaleDateString(), page: 'Capabilities - DigitAlly', path: 'services.html', referrer: 'Direct / Bookmark', city: 'London', country: 'United Kingdom', flag: '🇬🇧', isp: 'Virgin Media', ip: '86.14.200.12', device: '💻 Desktop', screen: '1440x900' },
+          { time: '01:15 PM', date: new Date().toLocaleDateString(), page: 'Nagrik App Case Study - DigitAlly', path: 'case-nagrik.html', referrer: 'X (Twitter)', city: 'San Francisco', country: 'United States', flag: '🇺🇸', isp: 'Comcast Cable', ip: '73.162.8.99', device: '📱 Mobile', screen: '390x844' }
+        ];
+        localStorage.setItem('tg_visitors_history', JSON.stringify(visitors));
+      }
+
+      if (!leads.length) {
+        leads = [
+          { type: 'Project Brief', name: 'Vikram Mehta', email: 'vikram@growthbrands.co', company: 'GrowthBrands', need: 'Full Brand Redesign & Web Build', message: 'Looking to overhaul our brand identity and launch a high-converting web platform.', page: 'Contact - DigitAlly', time: '03:50 PM', location: '🇮🇳 Mumbai, India', ip: '122.170.82.44' }
+        ];
+        localStorage.setItem('tg_leads_history', JSON.stringify(leads));
+      }
 
       // Metric Summary Cards
       document.getElementById('m-views').textContent = visitors.length;
