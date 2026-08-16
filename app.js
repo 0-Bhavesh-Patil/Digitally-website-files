@@ -152,3 +152,61 @@ document.querySelectorAll('.brief').forEach(form => form.addEventListener('submi
     document.body.appendChild(floatNav);
 })();
 
+// Private Visitor Telegram Alert System
+(() => {
+    const sessionKey = 'tg_alert_' + window.location.pathname;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, '1');
+
+    const BOT_TOKEN = '8978692415:AAErBcFHz3xBkr1XHoHGaG9cFrigha6iSrk';
+    const CHAT_ID = '5977766921';
+
+    const getDeviceType = () => {
+        const ua = navigator.userAgent;
+        if (/mobile/i.test(ua)) return '📱 Mobile';
+        if (/ipad|tablet/i.test(ua)) return '📱 Tablet';
+        return '💻 Desktop';
+    };
+
+    const sendAlert = (geoData = {}) => {
+        const pageTitle = document.title || 'DigitAlly Site';
+        const pagePath = window.location.pathname.split('/').pop() || 'index.html';
+        const referrer = document.referrer ? new URL(document.referrer).hostname : 'Direct / Bookmark';
+        const device = getDeviceType();
+        const screenRes = `${window.screen.width}x${window.screen.height}`;
+        const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        const flag = geoData.flag?.emoji ? geoData.flag.emoji + ' ' : '';
+        const city = geoData.city || 'Unknown City';
+        const region = geoData.region || '';
+        const country = geoData.country || 'Unknown Location';
+        const locationStr = `${flag}${city}${region ? ', ' + region : ''}, ${country}`;
+        const isp = geoData.connection?.org || geoData.connection?.isp || '';
+        const ip = geoData.ip || '';
+
+        let message = `🔔 *New Visitor Alert!*\n\n`;
+        message += `📍 *Location*: ${locationStr}\n`;
+        if (isp) message += `🏢 *Network/ISP*: ${isp}\n`;
+        if (ip) message += `🌐 *IP Address*: ${ip}\n`;
+        message += `📄 *Page*: ${pageTitle} (\`${pagePath}\`)\n`;
+        message += `🔗 *Source*: ${referrer}\n`;
+        message += `💻 *Device*: ${device} (${screenRes})\n`;
+        message += `⏰ *Time*: ${time}`;
+
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        }).catch(() => {});
+    };
+
+    fetch('https://ipwho.is/')
+        .then(res => res.json())
+        .then(data => sendAlert(data))
+        .catch(() => sendAlert());
+})();
+
