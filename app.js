@@ -5,14 +5,115 @@ document.querySelectorAll('[data-filter]').forEach(button => button.addEventList
     document.querySelectorAll('[data-category]').forEach(item => item.classList.toggle('hidden', button.dataset.filter !== 'all' && item.dataset.category !== button.dataset.filter));
 }));
 
-// Contact form brief handler
-document.querySelectorAll('.brief').forEach(form => form.addEventListener('submit', event => {
-    event.preventDefault();
-    const name = form.querySelector('[name=name]')?.value || 'there';
-    const subject = encodeURIComponent('Project inquiry from ' + name);
-    const details = encodeURIComponent([...new FormData(form)].map(([k, v]) => k + ': ' + v).join('\n'));
-    window.location.href = 'mailto:digitallyhq@gmail.com?subject=' + subject + '&body=' + details;
-}));
+// Contact Form & Quick Lead Handler (Sends instant Telegram alerts with email & details)
+(() => {
+    const BOT_TOKEN = '8978692415:AAErBcFHz3xBkr1XHoHGaG9cFrigha6iSrk';
+    const CHAT_ID = '5977766921';
+
+    // Main Contact Brief Form Handler
+    document.querySelectorAll('.brief').forEach(form => {
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.textContent = 'Sending...'; submitBtn.disabled = true; }
+
+            const formData = new FormData(form);
+            const name = formData.get('name') || 'Not provided';
+            const email = formData.get('email') || 'Not provided';
+            const company = formData.get('company') || 'Not provided';
+            const need = formData.get('need') || 'Not provided';
+            const message = formData.get('message') || 'No details provided';
+
+            let locStr = 'Unknown Location';
+            let ipStr = '';
+            try {
+                const geoRes = await fetch('https://ipwho.is/').then(r => r.json());
+                if (geoRes.success) {
+                    const flag = geoRes.flag?.emoji ? geoRes.flag.emoji + ' ' : '';
+                    locStr = `${flag}${geoRes.city || ''}, ${geoRes.country || ''}`;
+                    ipStr = geoRes.ip || '';
+                }
+            } catch(e) {}
+
+            let tgMessage = `📩 *NEW PROJECT BRIEF RECEIVED!*\n\n`;
+            tgMessage += `👤 *Name*: ${name}\n`;
+            tgMessage += `📧 *Email*: \`${email}\`\n`;
+            tgMessage += `🏢 *Company*: ${company}\n`;
+            tgMessage += `💡 *Need*: ${need}\n`;
+            tgMessage += `💬 *Message*: ${message}\n\n`;
+            tgMessage += `📍 *Location*: ${locStr}\n`;
+            if (ipStr) tgMessage += `🌐 *IP*: ${ipStr}\n`;
+            tgMessage += `⏰ *Time*: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: tgMessage, parse_mode: 'Markdown' })
+            }).catch(() => {});
+
+            // Also trigger mailto: digitallyhq@gmail.com
+            const subject = encodeURIComponent('Project inquiry from ' + name);
+            const details = encodeURIComponent([...new FormData(form)].map(([k, v]) => k + ': ' + v).join('\n'));
+            setTimeout(() => {
+                window.location.href = 'mailto:digitallyhq@gmail.com?subject=' + subject + '&body=' + details;
+            }, 300);
+
+            let feedback = form.querySelector('.form-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'form-feedback';
+                feedback.style.cssText = 'margin-top:16px; font-weight:700; color:var(--gold); font-size:14px;';
+                form.appendChild(feedback);
+            }
+            feedback.textContent = '✓ Thank you! Your brief has been sent to Bhavesh & Samruddhi. We will reply within 24 hours.';
+            if (submitBtn) { submitBtn.textContent = 'Brief Sent ✓'; }
+            form.reset();
+        });
+    });
+
+    // Quick Email Lead Bar Handler
+    document.querySelectorAll('.quick-lead-form').forEach(form => {
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const emailInput = form.querySelector('input[type="email"]');
+            const statusDiv = form.nextElementSibling || form.querySelector('.quick-lead-msg');
+            const email = emailInput ? emailInput.value : '';
+
+            if (!email) return;
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '...'; }
+
+            let locStr = 'Unknown Location';
+            try {
+                const geoRes = await fetch('https://ipwho.is/').then(r => r.json());
+                if (geoRes.success) {
+                    const flag = geoRes.flag?.emoji ? geoRes.flag.emoji + ' ' : '';
+                    locStr = `${flag}${geoRes.city || ''}, ${geoRes.country || ''}`;
+                }
+            } catch(e) {}
+
+            let tgMessage = `⚡ *QUICK EMAIL LEAD CAPTURED!*\n\n`;
+            tgMessage += `📧 *Email*: \`${email}\`\n`;
+            tgMessage += `📄 *Page Submitted From*: ${document.title} (\`${window.location.pathname.split('/').pop() || 'index.html'}\`)\n`;
+            tgMessage += `📍 *Location*: ${locStr}\n`;
+            tgMessage += `⏰ *Time*: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: tgMessage, parse_mode: 'Markdown' })
+            }).catch(() => {});
+
+            if (statusDiv) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.color = '#c7ff54';
+                statusDiv.textContent = '✓ Thanks! We will reach out shortly.';
+            }
+            if (submitBtn) { submitBtn.textContent = 'Sent ✓'; }
+            if (emailInput) emailInput.value = '';
+        });
+    });
+})();
 
 // Social Lightbox & Carousel Slide Viewer
 (() => {
