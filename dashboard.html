@@ -7,6 +7,20 @@
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="app.css">
   <style>
+    /* Restore native visible mouse cursor for full accessibility */
+    html, body, *, input, button, select, textarea, label {
+      cursor: auto !important;
+    }
+    button, .lock-btn, .dash-btn-sm, a {
+      cursor: pointer !important;
+    }
+    input[type="password"], input[type="text"], input[type="email"] {
+      cursor: text !important;
+    }
+    .cursor-dot {
+      display: none !important;
+    }
+
     body { background: #12130f; color: #f6f7f0; min-height: 100vh; font-family: Manrope, sans-serif; }
     
     /* Password Modal */
