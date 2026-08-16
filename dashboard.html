@@ -104,8 +104,10 @@
         <span class="dash-badge">🟢 Real-Time Tracking Active</span>
       </div>
       <div class="dash-actions">
-        <button class="dash-btn-sm" id="btn-refresh">🔄 Refresh Data</button>
-        <button class="dash-btn-sm" id="btn-clear" style="color:#ff7575;">🗑️ Clear Logs</button>
+        <button class="dash-btn-sm" id="btn-add-visitor" style="background:rgba(251,189,18,0.15); color:var(--gold);">⚡ + Sim Visitor</button>
+        <button class="dash-btn-sm" id="btn-add-lead" style="background:rgba(199,255,84,0.15); color:#c7ff54;">📩 + Sim Lead</button>
+        <button class="dash-btn-sm" id="btn-refresh">🔄 Refresh</button>
+        <button class="dash-btn-sm" id="btn-clear" style="color:#ff7575;">🗑️ Clear</button>
         <button class="dash-btn-sm" id="btn-lock">🔒 Lock</button>
       </div>
     </header>
@@ -281,6 +283,72 @@
     });
 
     document.getElementById('btn-refresh').addEventListener('click', () => {
+      loadDashboardData();
+    });
+
+    document.getElementById('btn-add-visitor')?.addEventListener('click', () => {
+      const cities = [
+        { city: 'Pune', country: 'India', flag: '🇮🇳', isp: 'Reliance Jio' },
+        { city: 'Mumbai', country: 'India', flag: '🇮🇳', isp: 'Airtel' },
+        { city: 'Bengaluru', country: 'India', flag: '🇮🇳', isp: 'ACT Fibernet' },
+        { city: 'London', country: 'United Kingdom', flag: '🇬🇧', isp: 'BT Group' },
+        { city: 'New York', country: 'United States', flag: '🇺🇸', isp: 'Verizon' },
+        { city: 'Dubai', country: 'UAE', flag: '🇦🇪', isp: 'Etisalat' }
+      ];
+      const pages = ['index.html', 'work.html', 'services.html', 'case-nagrik.html', 'about.html', 'contact.html'];
+      const refs = ['LinkedIn', 'Google Search', 'Direct / Bookmark', 'X (Twitter)', 'Instagram'];
+      const devs = ['📱 Mobile', '💻 Desktop', '📱 Tablet'];
+
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      const c = pick(cities); const p = pick(pages); const r = pick(refs); const d = pick(devs);
+      const now = new Date();
+
+      const newVis = {
+        timestamp: now.toISOString(),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        date: now.toLocaleDateString(),
+        page: 'DigitAlly Studio',
+        path: p,
+        referrer: r,
+        city: c.city,
+        country: c.country,
+        flag: c.flag,
+        isp: c.isp,
+        ip: `${Math.floor(Math.random()*150)+10}.${Math.floor(Math.random()*200)}.${Math.floor(Math.random()*200)}.${Math.floor(Math.random()*200)}`,
+        device: d,
+        screen: d.includes('Mobile') ? '390x844' : '1920x1080'
+      };
+
+      let history = JSON.parse(localStorage.getItem('tg_visitors_history') || '[]');
+      history.unshift(newVis);
+      localStorage.setItem('tg_visitors_history', JSON.stringify(history));
+      loadDashboardData();
+    });
+
+    document.getElementById('btn-add-lead')?.addEventListener('click', () => {
+      const names = ['Ananya Sharma', 'Rohan Verma', 'Sarah Jenkins', 'Karan Patel'];
+      const comps = ['NexaTech', 'CloudPulse', 'Studio Zero', 'Apex Commerce'];
+      const needs = ['Full Web Platform Build', 'Brand & Identity System', 'Product UX Audit', 'Growth Strategy'];
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      const n = pick(names); const c = pick(comps); const nd = pick(needs);
+      const email = `${n.toLowerCase().replace(' ', '.')}@${c.toLowerCase()}.com`;
+
+      const newLead = {
+        type: 'Project Brief',
+        name: n,
+        email: email,
+        company: c,
+        need: nd,
+        message: `Hi DigitAlly team, we are looking for a ${nd.toLowerCase()} for ${c}. Would love to connect and get an estimate.`,
+        page: 'Contact - DigitAlly',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        location: '🇮🇳 India',
+        ip: '103.45.12.88'
+      };
+
+      let leads = JSON.parse(localStorage.getItem('tg_leads_history') || '[]');
+      leads.unshift(newLead);
+      localStorage.setItem('tg_leads_history', JSON.stringify(leads));
       loadDashboardData();
     });
 
